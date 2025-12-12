@@ -1,0 +1,568 @@
+@startuml K2559196_Library_Management_System
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "Model" {
+    enum K2559196_MembershipType {
+        STUDENT
+        FACULTY
+        GUEST
+    }
+
+    class K2559196_Book {
+        - bookId: String
+        - title: String
+        - author: String
+        - category: String
+        - isbn: String
+        - state: K2559196_BookState
+        - borrowedHistory: List<String>
+        - reviews: String
+        - tags: List<String>
+        - edition: String
+        + K2559196_Book(bookId: String, title: String, author: String, category: String, isbn: String)
+        + getBookId(): String
+        + setBookId(bookId: String): void
+        + getTitle(): String
+        + setTitle(title: String): void
+        + getAuthor(): String
+        + setAuthor(author: String): void
+        + getCategory(): String
+        + setCategory(category: String): void
+        + getIsbn(): String
+        + setIsbn(isbn: String): void
+        + getState(): K2559196_BookState
+        + setState(state: K2559196_BookState): void
+        + getBorrowedHistory(): List<String>
+        + addToBorrowedHistory(userId: String): void
+        + getReviews(): String
+        + setReviews(reviews: String): void
+        + getTags(): List<String>
+        + setTags(tags: List<String>): void
+        + getEdition(): String
+        + setEdition(edition: String): void
+        + getAvailabilityStatus(): String
+        + toString(): String
+    }
+
+    class K2559196_User {
+        - userId: String
+        - name: String
+        - email: String
+        - contactNumber: String
+        - membershipType: K2559196_MembershipType
+        - borrowedBooksHistory: List<K2559196_BorrowRecord>
+        - notifications: List<String>
+        + K2559196_User(userId: String, name: String, email: String, contactNumber: String, membershipType: K2559196_MembershipType)
+        + getUserId(): String
+        + setUserId(userId: String): void
+        + getName(): String
+        + setName(name: String): void
+        + getEmail(): String
+        + setEmail(email: String): void
+        + getContactNumber(): String
+        + setContactNumber(contactNumber: String): void
+        + getMembershipType(): K2559196_MembershipType
+        + setMembershipType(membershipType: K2559196_MembershipType): void
+        + getBorrowedBooksHistory(): List<K2559196_BorrowRecord>
+        + addBorrowRecord(record: K2559196_BorrowRecord): void
+        + getNotifications(): List<String>
+        + getBorrowingLimit(): int
+        + getBorrowingPeriodDays(): int
+        + getCurrentActiveBorrowCount(): long
+        + update(message: String): void
+        + toString(): String
+    }
+
+    class K2559196_BorrowRecord {
+        - recordId: String
+        - userId: String
+        - bookId: String
+        - borrowDate: LocalDate
+        - dueDate: LocalDate
+        - returnDate: LocalDate
+        - fine: double
+        + K2559196_BorrowRecord(recordId: String, userId: String, bookId: String, borrowDate: LocalDate, dueDate: LocalDate)
+        + getRecordId(): String
+        + setRecordId(recordId: String): void
+        + getUserId(): String
+        + setUserId(userId: String): void
+        + getBookId(): String
+        + setBookId(bookId: String): void
+        + getBorrowDate(): LocalDate
+        + setBorrowDate(borrowDate: LocalDate): void
+        + getDueDate(): LocalDate
+        + setDueDate(dueDate: LocalDate): void
+        + getReturnDate(): LocalDate
+        + setReturnDate(returnDate: LocalDate): void
+        + getFine(): double
+        + setFine(fine: double): void
+        + isOverdue(): boolean
+        + getOverdueDays(): long
+    }
+
+    class K2559196_Reservation {
+        - reservationId: String
+        - userId: String
+        - bookId: String
+        - reservationDate: LocalDate
+        - notified: boolean
+        + K2559196_Reservation(reservationId: String, userId: String, bookId: String, reservationDate: LocalDate)
+        + getReservationId(): String
+        + setReservationId(reservationId: String): void
+        + getUserId(): String
+        + setUserId(userId: String): void
+        + getBookId(): String
+        + setBookId(bookId: String): void
+        + getReservationDate(): LocalDate
+        + setReservationDate(reservationDate: LocalDate): void
+        + isNotified(): boolean
+        + setNotified(notified: boolean): void
+    }
+}
+
+package "State Pattern" <<Rectangle>> {
+    interface K2559196_BookState {
+        + borrow(book: K2559196_Book): void
+        + returnBook(book: K2559196_Book): void
+        + reserve(book: K2559196_Book): void
+        + getStateName(): String
+    }
+
+    class K2559196_AvailableState {
+        + borrow(book: K2559196_Book): void
+        + returnBook(book: K2559196_Book): void
+        + reserve(book: K2559196_Book): void
+        + getStateName(): String
+    }
+
+    class K2559196_BorrowedState {
+        + borrow(book: K2559196_Book): void
+        + returnBook(book: K2559196_Book): void
+        + reserve(book: K2559196_Book): void
+        + getStateName(): String
+    }
+
+    class K2559196_ReservedState {
+        + borrow(book: K2559196_Book): void
+        + returnBook(book: K2559196_Book): void
+        + reserve(book: K2559196_Book): void
+        + getStateName(): String
+    }
+}
+
+package "Strategy Pattern" <<Rectangle>> {
+    interface K2559196_FineCalculationStrategy {
+        + calculateFine(overdueDays: long): double
+        + getMembershipType(): K2559196_MembershipType
+    }
+
+    class K2559196_StudentFineStrategy {
+        + calculateFine(overdueDays: long): double
+        + getMembershipType(): K2559196_MembershipType
+    }
+
+    class K2559196_FacultyFineStrategy {
+        + calculateFine(overdueDays: long): double
+        + getMembershipType(): K2559196_MembershipType
+    }
+
+    class K2559196_GuestFineStrategy {
+        + calculateFine(overdueDays: long): double
+        + getMembershipType(): K2559196_MembershipType
+    }
+
+    class K2559196_FineCalculator {
+        - strategy: K2559196_FineCalculationStrategy
+        + K2559196_FineCalculator(membershipType: K2559196_MembershipType)
+        + setStrategy(membershipType: K2559196_MembershipType): void
+        + calculateFine(overdueDays: long): double
+    }
+}
+
+package "Observer Pattern" <<Rectangle>> {
+    interface K2559196_Observer {
+        + update(message: String): void
+    }
+
+    interface K2559196_Subject {
+        + attach(observer: K2559196_Observer): void
+        + detach(observer: K2559196_Observer): void
+        + notifyObservers(message: String): void
+    }
+
+    class K2559196_NotificationManager {
+        - observers: List<K2559196_Observer>
+        + K2559196_NotificationManager()
+        + attach(observer: K2559196_Observer): void
+        + detach(observer: K2559196_Observer): void
+        + notifyObservers(message: String): void
+        + notifySpecificObserver(observer: K2559196_Observer, message: String): void
+    }
+}
+
+package "Builder Pattern" <<Rectangle>> {
+    class K2559196_BookBuilder {
+        - bookId: String
+        - title: String
+        - author: String
+        - category: String
+        - isbn: String
+        - reviews: String
+        - tags: List<String>
+        - edition: String
+        + K2559196_BookBuilder(bookId: String, title: String, author: String)
+        + setCategory(category: String): K2559196_BookBuilder
+        + setIsbn(isbn: String): K2559196_BookBuilder
+        + setReviews(reviews: String): K2559196_BookBuilder
+        + addTag(tag: String): K2559196_BookBuilder
+        + setTags(tags: List<String>): K2559196_BookBuilder
+        + setEdition(edition: String): K2559196_BookBuilder
+        + build(): K2559196_Book
+    }
+}
+
+package "Decorator Pattern" <<Rectangle>> {
+    abstract class K2559196_BookDecorator {
+        # decoratedBook: K2559196_Book
+        + K2559196_BookDecorator(book: K2559196_Book)
+        + {abstract} toString(): String
+    }
+
+    class K2559196_FeaturedBookDecorator {
+        + K2559196_FeaturedBookDecorator(book: K2559196_Book)
+        + toString(): String
+        + getFeatureLabel(): String
+    }
+
+    class K2559196_RecommendedBookDecorator {
+        + K2559196_RecommendedBookDecorator(book: K2559196_Book)
+        + toString(): String
+        + getRecommendationLabel(): String
+    }
+
+    class K2559196_SpecialEditionDecorator {
+        + K2559196_SpecialEditionDecorator(book: K2559196_Book)
+        + toString(): String
+        + getSpecialEditionLabel(): String
+    }
+}
+
+package "Command Pattern" <<Rectangle>> {
+    interface K2559196_Command {
+        + execute(): void
+        + undo(): void
+        + getCommandDescription(): String
+    }
+
+    class K2559196_BorrowCommand {
+        - libraryManager: K2559196_LibraryManager
+        - user: K2559196_User
+        - book: K2559196_Book
+        - executed: boolean
+        + K2559196_BorrowCommand(libraryManager: K2559196_LibraryManager, user: K2559196_User, book: K2559196_Book)
+        + execute(): void
+        + undo(): void
+        + getCommandDescription(): String
+    }
+
+    class K2559196_ReturnCommand {
+        - libraryManager: K2559196_LibraryManager
+        - user: K2559196_User
+        - book: K2559196_Book
+        - executed: boolean
+        + K2559196_ReturnCommand(libraryManager: K2559196_LibraryManager, user: K2559196_User, book: K2559196_Book)
+        + execute(): void
+        + undo(): void
+        + getCommandDescription(): String
+    }
+
+    class K2559196_ReserveCommand {
+        - libraryManager: K2559196_LibraryManager
+        - user: K2559196_User
+        - book: K2559196_Book
+        - executed: boolean
+        + K2559196_ReserveCommand(libraryManager: K2559196_LibraryManager, user: K2559196_User, book: K2559196_Book)
+        + execute(): void
+        + undo(): void
+        + getCommandDescription(): String
+    }
+
+    class K2559196_CancelReservationCommand {
+        - libraryManager: K2559196_LibraryManager
+        - user: K2559196_User
+        - book: K2559196_Book
+        - executed: boolean
+        + K2559196_CancelReservationCommand(libraryManager: K2559196_LibraryManager, user: K2559196_User, book: K2559196_Book)
+        + execute(): void
+        + undo(): void
+        + getCommandDescription(): String
+    }
+
+    class K2559196_CommandInvoker {
+        - commandHistory: List<K2559196_Command>
+        + K2559196_CommandInvoker()
+        + executeCommand(command: K2559196_Command): void
+        + undoLastCommand(): void
+        + getCommandHistory(): List<K2559196_Command>
+        + clearHistory(): void
+    }
+}
+
+package "Manager" {
+    class K2559196_LibraryManager {
+        - books: Map<String, K2559196_Book>
+        - users: Map<String, K2559196_User>
+        - borrowRecords: List<K2559196_BorrowRecord>
+        - reservations: List<K2559196_Reservation>
+        - notificationManager: K2559196_NotificationManager
+        - recordIdCounter: int
+        - reservationIdCounter: int
+        + K2559196_LibraryManager()
+        + addBook(book: K2559196_Book): void
+        + removeBook(bookId: String): void
+        + updateBook(book: K2559196_Book): void
+        + getBook(bookId: String): K2559196_Book
+        + getAllBooks(): List<K2559196_Book>
+        + addUser(user: K2559196_User): void
+        + removeUser(userId: String): void
+        + getUser(userId: String): K2559196_User
+        + getAllUsers(): List<K2559196_User>
+        + borrowBook(user: K2559196_User, book: K2559196_Book): boolean
+        + returnBook(user: K2559196_User, book: K2559196_Book): boolean
+        + reserveBook(user: K2559196_User, book: K2559196_Book): boolean
+        + cancelReservation(user: K2559196_User, book: K2559196_Book): boolean
+        + getAllBorrowRecords(): List<K2559196_BorrowRecord>
+        + getOverdueRecords(): List<K2559196_BorrowRecord>
+        + checkAndNotifyOverdue(): void
+        + checkAndNotifyDueSoon(): void
+        + getAllReservations(): List<K2559196_Reservation>
+        + getNotificationManager(): K2559196_NotificationManager
+    }
+
+    class K2559196_ReportGenerator {
+        - libraryManager: K2559196_LibraryManager
+        + K2559196_ReportGenerator(libraryManager: K2559196_LibraryManager)
+        + getMostBorrowedBooks(): Map<String, Integer>
+        + getActiveBorrowers(): Map<String, Long>
+        + getOverdueBooksReport(): List<Map<String, String>>
+        + getBooksByCategory(): Map<String, Integer>
+        + getUsersByMembershipType(): Map<String, Long>
+        + getTotalFinesCollected(): double
+        + getAvailabilityStatusCount(): Map<String, Integer>
+    }
+}
+
+package "GUI" {
+    class K2559196_MainFrame {
+        - libraryManager: K2559196_LibraryManager
+        - reportGenerator: K2559196_ReportGenerator
+        - commandInvoker: K2559196_CommandInvoker
+        - tabbedPane: JTabbedPane
+        + K2559196_MainFrame()
+        - initializeUI(): void
+        - initializeSampleData(): void
+        + main(args: String[]): void
+    }
+
+    class K2559196_BookPanel {
+        - libraryManager: K2559196_LibraryManager
+        - bookTable: JTable
+        - tableModel: DefaultTableModel
+        + K2559196_BookPanel(libraryManager: K2559196_LibraryManager)
+        - createFormPanel(): JPanel
+        - createTablePanel(): JPanel
+        - addBook(): void
+        - updateBook(): void
+        - deleteBook(): void
+        - refreshTable(): void
+    }
+
+    class K2559196_UserPanel {
+        - libraryManager: K2559196_LibraryManager
+        - userTable: JTable
+        - tableModel: DefaultTableModel
+        + K2559196_UserPanel(libraryManager: K2559196_LibraryManager)
+        - createFormPanel(): JPanel
+        - createTablePanel(): JPanel
+        - addUser(): void
+        - updateUser(): void
+        - deleteUser(): void
+        - refreshTable(): void
+    }
+
+    class K2559196_BorrowReturnPanel {
+        - libraryManager: K2559196_LibraryManager
+        - commandInvoker: K2559196_CommandInvoker
+        - recordTable: JTable
+        - tableModel: DefaultTableModel
+        + K2559196_BorrowReturnPanel(libraryManager: K2559196_LibraryManager, commandInvoker: K2559196_CommandInvoker)
+        - createActionPanel(): JPanel
+        - createRecordPanel(): JPanel
+        - borrowBook(): void
+        - returnBook(): void
+        - refreshData(): void
+    }
+
+    class K2559196_ReservationPanel {
+        - libraryManager: K2559196_LibraryManager
+        - commandInvoker: K2559196_CommandInvoker
+        - reservationTable: JTable
+        - tableModel: DefaultTableModel
+        + K2559196_ReservationPanel(libraryManager: K2559196_LibraryManager, commandInvoker: K2559196_CommandInvoker)
+        - createActionPanel(): JPanel
+        - createReservationListPanel(): JPanel
+        - reserveBook(): void
+        - cancelReservation(): void
+        - refreshData(): void
+    }
+
+    class K2559196_ReportPanel {
+        - reportGenerator: K2559196_ReportGenerator
+        - reportArea: JTextArea
+        + K2559196_ReportPanel(reportGenerator: K2559196_ReportGenerator)
+        - createButtonPanel(): JPanel
+        - createReportArea(): JScrollPane
+        - showMostBorrowedBooks(): void
+        - showActiveBorrowers(): void
+        - showOverdueBooks(): void
+    }
+
+    class K2559196_NotificationPanel {
+        - libraryManager: K2559196_LibraryManager
+        - notificationArea: JTextArea
+        + K2559196_NotificationPanel(libraryManager: K2559196_LibraryManager)
+        - createControlPanel(): JPanel
+        - createNotificationArea(): JScrollPane
+        - displayUserNotifications(): void
+        - checkOverdueBooks(): void
+    }
+
+    class K2559196_SampleDataInitializer {
+        + {static} initializeSampleData(libraryManager: K2559196_LibraryManager): void
+        - {static} initializeBooks(libraryManager: K2559196_LibraryManager): void
+        - {static} initializeUsers(libraryManager: K2559196_LibraryManager): void
+        - {static} initializeBorrowRecords(libraryManager: K2559196_LibraryManager): void
+    }
+}
+
+class K2559196_LibraryManagementSystem {
+    + {static} main(args: String[]): void
+}
+
+K2559196_Book --> K2559196_BookState
+K2559196_Book --> K2559196_MembershipType
+K2559196_User ..|> K2559196_Observer
+K2559196_User --> K2559196_MembershipType
+K2559196_User --> K2559196_BorrowRecord
+
+K2559196_AvailableState ..|> K2559196_BookState
+K2559196_BorrowedState ..|> K2559196_BookState
+K2559196_ReservedState ..|> K2559196_BookState
+
+K2559196_StudentFineStrategy ..|> K2559196_FineCalculationStrategy
+K2559196_FacultyFineStrategy ..|> K2559196_FineCalculationStrategy
+K2559196_GuestFineStrategy ..|> K2559196_FineCalculationStrategy
+K2559196_FineCalculator --> K2559196_FineCalculationStrategy
+
+K2559196_NotificationManager ..|> K2559196_Subject
+K2559196_NotificationManager --> K2559196_Observer
+
+K2559196_BookBuilder ..> K2559196_Book : creates
+
+K2559196_BookDecorator --|> K2559196_Book
+K2559196_BookDecorator --> K2559196_Book
+K2559196_FeaturedBookDecorator --|> K2559196_BookDecorator
+K2559196_RecommendedBookDecorator --|> K2559196_BookDecorator
+K2559196_SpecialEditionDecorator --|> K2559196_BookDecorator
+
+K2559196_BorrowCommand ..|> K2559196_Command
+K2559196_ReturnCommand ..|> K2559196_Command
+K2559196_ReserveCommand ..|> K2559196_Command
+K2559196_CancelReservationCommand ..|> K2559196_Command
+K2559196_CommandInvoker --> K2559196_Command
+K2559196_BorrowCommand --> K2559196_LibraryManager
+K2559196_BorrowCommand --> K2559196_User
+K2559196_BorrowCommand --> K2559196_Book
+
+K2559196_LibraryManager --> K2559196_Book
+K2559196_LibraryManager --> K2559196_User
+K2559196_LibraryManager --> K2559196_BorrowRecord
+K2559196_LibraryManager --> K2559196_Reservation
+K2559196_LibraryManager --> K2559196_NotificationManager
+K2559196_LibraryManager --> K2559196_FineCalculator
+
+K2559196_ReportGenerator --> K2559196_LibraryManager
+
+K2559196_MainFrame --> K2559196_LibraryManager
+K2559196_MainFrame --> K2559196_ReportGenerator
+K2559196_MainFrame --> K2559196_CommandInvoker
+K2559196_MainFrame --> K2559196_BookPanel
+K2559196_MainFrame --> K2559196_UserPanel
+K2559196_MainFrame --> K2559196_BorrowReturnPanel
+K2559196_MainFrame --> K2559196_ReservationPanel
+K2559196_MainFrame --> K2559196_ReportPanel
+K2559196_MainFrame --> K2559196_NotificationPanel
+
+K2559196_BookPanel --> K2559196_LibraryManager
+K2559196_UserPanel --> K2559196_LibraryManager
+K2559196_BorrowReturnPanel --> K2559196_LibraryManager
+K2559196_BorrowReturnPanel --> K2559196_CommandInvoker
+K2559196_ReservationPanel --> K2559196_LibraryManager
+K2559196_ReservationPanel --> K2559196_CommandInvoker
+K2559196_ReportPanel --> K2559196_ReportGenerator
+K2559196_NotificationPanel --> K2559196_LibraryManager
+
+K2559196_SampleDataInitializer --> K2559196_LibraryManager
+K2559196_LibraryManagementSystem --> K2559196_MainFrame
+
+note right of K2559196_BookState
+  STATE PATTERN
+  Manages book availability states:
+  - Available
+  - Borrowed
+  - Reserved
+end note
+
+note right of K2559196_FineCalculationStrategy
+  STRATEGY PATTERN
+  Different fine calculations:
+  - Student: LKR 50/day
+  - Faculty: LKR 20/day
+  - Guest: LKR 100/day
+end note
+
+note right of K2559196_Observer
+  OBSERVER PATTERN
+  Notifies users about:
+  - Overdue books
+  - Due dates
+  - Reserved book availability
+end note
+
+note right of K2559196_BookBuilder
+  BUILDER PATTERN
+  Creates complex book objects
+  with optional metadata
+end note
+
+note right of K2559196_BookDecorator
+  DECORATOR PATTERN
+  Adds features to books:
+  - Featured
+  - Recommended
+  - Special Edition
+end note
+
+note right of K2559196_Command
+  COMMAND PATTERN
+  Encapsulates actions:
+  - Borrow
+  - Return
+  - Reserve
+  - Cancel Reservation
+  With undo capability
+end note
+
+@enduml
